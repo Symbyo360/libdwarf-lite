@@ -11,7 +11,8 @@ dwarf_error.c
 dwarf_fill_in_attr_form.c
 dwarf_find_sigref.c dwarf_fission_to_cu.c
 dwarf_form.c dwarf_form_class_names.c
-dwarf_frame.c dwarf_frame2.c
+dwarf_frame.c dwarf_frame2.c dwarf_frame_iter.c
+dwarf_frame_cfa_read.c
 dwarf_gdbindex.c dwarf_global.c
 dwarf_gnu_index.c dwarf_groups.c
 dwarf_harmless.c dwarf_generic_init.c dwarf_init_finish.c
@@ -20,7 +21,9 @@ dwarf_line.c dwarf_loc.c
 dwarf_loclists.c
 dwarf_locationop_read.c
 dwarf_local_malloc.c
-dwarf_machoread.c dwarf_macro.c dwarf_macro5.c
+dwarf_lname_version.c
+dwarf_lvn_name.c
+dwarf_machoread.c dwarf_64machoread.c dwarf_macro.c dwarf_macro5.c
 dwarf_memcpy_swap.c
 dwarf_names.c
 dwarf_object_read_common.c dwarf_object_detector.c
@@ -100,7 +103,8 @@ else()
     add_library(libdwarf::dwarf-static ALIAS dwarf)
 endif()
 set_folder(dwarf src/lib/libdwarf)
-target_compile_options(dwarf PRIVATE ${COMPILER_FLAGS} ${DW_FWALL})
+target_compile_options(dwarf PRIVATE ${COMPILER_FLAGS} ${DW_FWALL}
+    -D_GNU_SOURCE)
 msvc_posix(dwarf)
 target_compile_definitions(dwarf PUBLIC ${DEFS})
 target_include_directories(dwarf PUBLIC
@@ -140,7 +144,7 @@ install(EXPORT libdwarfTargets
 export(
   TARGETS dwarf
   NAMESPACE libdwarf::
-  FILE "${PROJECT_BINARY_DIR}/libdwarf-targets.cmake"
+  FILE "${CMAKE_CURRENT_BINARY_DIR}/libdwarf-targets.cmake"
 )
 install(FILES "${PROJECT_BINARY_DIR}/src/lib/libdwarf/libdwarf.pc" DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
 install(FILES "${PROJECT_SOURCE_DIR}/cmake/Findzstd.cmake" DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/libdwarf")

@@ -1808,7 +1808,7 @@ dwarf_die_abbrev_code(Dwarf_Die die)
     return die->di_abbrev_code;
 }
 
-/*  Returns a flag through ablhas_child. Non-zero if
+/*  Returns a flag through ab_has_child. Non-zero if
     the DIE has children, zero if it does not.
     It has no Dwarf_Error arg!
 */
@@ -1915,20 +1915,32 @@ static int
 block_means_locexpr(Dwarf_Half attr)
 {
     switch(attr) {
+    case DW_AT_allocated:
+    case DW_AT_associated:
     case DW_AT_bit_size:
     case DW_AT_byte_size:
+    case DW_AT_byte_stride:
+    case DW_AT_bit_stride:
     case DW_AT_call_data_location:
     case DW_AT_call_data_value:
+    case DW_AT_call_origin:
+    case DW_AT_call_target:
+    case DW_AT_call_target_clobbered:
     case DW_AT_call_value:
+    case DW_AT_count:
+    case DW_AT_data_location:
     case DW_AT_data_member_location:
     case DW_AT_frame_base:
     case DW_AT_GNU_call_site_target:
     case DW_AT_GNU_call_site_value:
     case DW_AT_location:
+    case DW_AT_lower_bound:
+    case DW_AT_rank:
     case DW_AT_return_addr:
     case DW_AT_segment:
     case DW_AT_static_link:
     case DW_AT_string_length:
+    case DW_AT_upper_bound:
     case DW_AT_use_location:
     case DW_AT_vtable_elem_location:
         return TRUE;
@@ -2290,119 +2302,10 @@ dwarf_machine_architecture(Dwarf_Debug dbg,
         dw_ub_offset, dw_ub_count,
         dw_ub_index,  dw_comdat_groupnumber);
 }
-/*
-
-    DWARF6 DW_LNAME values are referenced
-    by using dwarf_language_version_string()
-    (these are permitted in DWARF5, see
-    www.dwarfstd.org  )
-
-    For DWARF5 DW_LANG values, call dwarf_srclang()
-    instead.
-
-*/
-
-int dwarf_language_version_data(
-    Dwarf_Unsigned dw_lang_name,
-    int *          dw_default_lower_bound,
-    const char   **dw_version_scheme)
-{
-    const char *lname = 0;
-    int res = 0;
-    unsigned int ui = 0;
-    unsigned int unreasonable_name = 65535;
-
-    if (dw_lang_name >= unreasonable_name) {
-        /*  Want to deal with improper code calling here,
-            not just trim off upper bits in the cast.  */
-        return DW_DLV_NO_ENTRY;
-    }
-    ui = (unsigned int)dw_lang_name;
-    res = dwarf_get_LNAME_name(ui,&lname);
-    if (res == DW_DLV_NO_ENTRY) {
-        return res;
-    }
-    switch(dw_lang_name) {
-    case DW_LNAME_Ada:
-    case DW_LNAME_Cobol:
-    case DW_LNAME_Fortran:
-    case DW_LNAME_Pascal:
-    case DW_LNAME_Algol68:
-        *dw_default_lower_bound = 1;
-        *dw_version_scheme = "YYYY";
-        break;
-    case DW_LNAME_BLISS:
-    case DW_LNAME_Crystal:
-    case DW_LNAME_D :
-    case DW_LNAME_Dylan:
-    case DW_LNAME_Go :
-    case DW_LNAME_Haskell:
-    case DW_LNAME_Java:
-    case DW_LNAME_Kotlin:
-    case DW_LNAME_OCaml:
-    case DW_LNAME_OpenCL_C:
-    case DW_LNAME_Python:
-    case DW_LNAME_RenderScript:
-    case DW_LNAME_Rust:
-    case DW_LNAME_UPC:
-    case DW_LNAME_Zig:
-    case DW_LNAME_Assembly:
-    case DW_LNAME_C_sharp:
-    case DW_LNAME_Mojo:
-    case DW_LNAME_Hylo:
-    case DW_LNAME_HIP:
-        *dw_default_lower_bound = 0;
-        *dw_version_scheme = 0;
-        break;
-    case DW_LNAME_C:
-    case DW_LNAME_C_plus_plus:
-    case DW_LNAME_ObjC:
-    case DW_LNAME_ObjC_plus_plus:
-    case DW_LNAME_Move:
-    case DW_LNAME_Odin:
-        *dw_default_lower_bound = 0;
-        *dw_version_scheme = "YYYYMM";
-        break;
-    case DW_LNAME_Julia:
-    case DW_LNAME_Modula2:
-    case DW_LNAME_Modula3:
-    case DW_LNAME_PLI:
-        *dw_default_lower_bound = 1;
-        *dw_version_scheme = 0;
-        break;
-    case DW_LNAME_Swift:
-    case DW_LNAME_OpenCL_CPP:
-    case DW_LNAME_CPP_for_OpenCL:
-        *dw_default_lower_bound = 0;
-        *dw_version_scheme = "VVMM";
-        break;
-    case DW_LNAME_GLSL :
-    case DW_LNAME_GLSLES:
-    case DW_LNAME_Ruby:
-    case DW_LNAME_P4:
-    case DW_LNAME_Metal:
-    case DW_LNAME_V:
-    case DW_LNAME_Nim:
-        *dw_default_lower_bound = 0;
-        *dw_version_scheme = "VVMMPP";
-        break;
-    case DW_LNAME_HLSL:
-        *dw_default_lower_bound = 0;
-        *dw_version_scheme = "YYYY";
-        break;
-    case DW_LNAME_SYCL:
-        *dw_default_lower_bound = 0;
-        *dw_version_scheme = "YYYYRR";
-        break;
-    default:
-        return DW_DLV_NO_ENTRY;
-    }
-    return DW_DLV_OK;
-}
 /*  OBSOLETE NAME:  Do not use dwarf_language_version_string(). */
 int dwarf_language_version_string(
     Dwarf_Unsigned dw_lang_name,
-    int *          dw_default_lower_bound,
+    int           *dw_default_lower_bound,
     const char   **dw_version_scheme)
 {
     return dwarf_language_version_data(dw_lang_name,

@@ -214,7 +214,7 @@ validate_length(Dwarf_Debug dbg,
         address_size = dbg->de_pointer_size;
     }
     mod = total_len % address_size;
-    if (mod != 0) {
+    if (mod != 0 && dbg->de_harmless_errors_on) {
         dwarfstring  harm;
         Dwarf_Unsigned sectionoffset = ciefde_start - section_ptr;
 
@@ -857,9 +857,30 @@ _dwarf_create_cie_from_after_start(Dwarf_Debug dbg,
         if (res != DW_DLV_OK) {
             return res;
         }
-        if (return_address_register >
-            dbg->de_frame_reg_rules_entry_count) {
-            _dwarf_error(dbg, error, DW_DLE_CIE_RET_ADDR_REG_ERROR);
+        if (return_address_register !=
+            dbg->de_frame_cfa_col_number &&
+                return_address_register >
+                dbg->de_frame_reg_rules_entry_count) {
+            dwarfstring m;
+
+            dwarfstring_constructor(&m);
+            dwarfstring_append_printf_u(&m,
+                "DW_DLE_CIE_RET_ADDR_REG_ERROR: The "
+                "return address register %u",
+                return_address_register);
+            dwarfstring_append_printf_u(&m,
+                " vs. cfa colum %u"
+                " mismatch ",
+                dbg->de_frame_cfa_col_number);
+            dwarfstring_append_printf_u(&m,
+                " or the return address register is"
+                " too large vs rules entry count of"
+                " %u.",
+                dbg->de_frame_reg_rules_entry_count);
+            _dwarf_error_string(dbg, error,
+                DW_DLE_CIE_RET_ADDR_REG_ERROR,
+                dwarfstring_string(&m));
+            dwarfstring_destructor(&m);
             return DW_DLV_ERROR;
         }
         frame_ptr += size;
@@ -1034,6 +1055,8 @@ _dwarf_create_cie_from_after_start(Dwarf_Debug dbg,
     new_cie->ci_cie_start = prefix->cf_start_addr;
 
     if ( frame_ptr > section_ptr_end) {
+        dwarf_dealloc(dbg,new_cie,DW_DLA_CIE);
+        new_cie = 0;
         _dwarf_error(dbg, error, DW_DLE_DF_FRAME_DECODING_ERROR);
         return DW_DLV_ERROR;
     }
@@ -1377,6 +1400,7 @@ _dwarf_create_fde_from_after_start(Dwarf_Debug dbg,
     if (augt == aug_gcc_eh_z) {
         new_fde->fd_gnu_eh_aug_present = TRUE;
     }
+    new_fde->fd_have_fde_frame_tab = FALSE;
     new_fde->fd_gnu_eh_augmentation_bytes = fde_aug_data;
     new_fde->fd_gnu_eh_augmentation_len = fde_aug_data_len;
     validate_length(dbg,cieptr,new_fde->fd_length,
@@ -1513,8 +1537,9 @@ _dwarf_dealloc_fde_cie_list_internal(Dwarf_Fde head_fde_ptr,
         Dwarf_Frame frame = curcie->ci_initial_table;
 
         nextcie = curcie->ci_next;
-        if (frame)
+        if (frame) {
             dwarf_dealloc(curcie->ci_dbg, frame, DW_DLA_FRAME);
+        }
         dwarf_dealloc(curcie->ci_dbg, curcie, DW_DLA_CIE);
     }
 }
@@ -2026,15 +2051,12 @@ dwarf_dealloc_fde_cie_list(Dwarf_Debug dbg,
     Dwarf_Signed i = 0;
 
     for (i = 0; i < cie_element_count; ++i) {
-        Dwarf_Frame frame = cie_data[i]->ci_initial_table;
-
-        if (frame) {
-            dwarf_dealloc(dbg, frame, DW_DLA_FRAME);
-        }
         dwarf_dealloc(dbg, cie_data[i], DW_DLA_CIE);
+        cie_data[i] = 0;
     }
     for (i = 0; i < fde_element_count; ++i) {
         dwarf_dealloc(dbg, fde_data[i], DW_DLA_FDE);
+        fde_data[i] = 0;
     }
     if (cie_data) {
         dwarf_dealloc(dbg, cie_data, DW_DLA_LIST);

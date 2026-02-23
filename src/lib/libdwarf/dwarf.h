@@ -654,18 +654,19 @@ extern "C" {
 #define DW_AT_GNU_bias                          0x2305 /* GNU */
 
 /*  Go-specific type attributes
-    Naming as lower-case go instead of GO is a small mistake
-    by the Go language folks, it seems. This is the
+    Naming as lower-case go instead of GO is the choice
+    the Go language folks chose, it seems. This is the
     common spelling for these. */
 #define DW_AT_go_kind                           0x2900
 #define DW_AT_go_key                            0x2901
 #define DW_AT_go_elem                           0x2902
-
 /*  Attribute for DW_TAG_member of a struct type.
     Nonzero value indicates the struct field is an embedded field.*/
 #define DW_AT_go_embedded_field                 0x2903
-
 #define DW_AT_go_runtime_type                   0x2904
+#define DW_AT_go_package_name                   0x2905
+#define DW_AT_go_dict_index                     0x2906
+#define DW_AT_go_closure_offset                 0x2907
 
 /* UPC extension. */
 #define DW_AT_upc_threads_scaled                0x3210 /* UPC */
@@ -1190,6 +1191,7 @@ most-likely-useful name. */
 #define DW_LANG_Kotlin                  0x0026 /* DWARF6 */
 #define DW_LANG_Zig                     0x0027 /* DWARF6 */
 #define DW_LANG_Crystal                 0x0028 /* DWARF6 */
+/*  0x0029 has not been assigned to a language. */
 #define DW_LANG_C_plus_plus_17          0x002a /* DWARF6 */
 #define DW_LANG_C_plus_plus_20          0x002b /* DWARF6 */
 #define DW_LANG_C17                     0x002c /* DWARF6 */
@@ -1206,11 +1208,21 @@ most-likely-useful name. */
 #define DW_LANG_OpenCL_CPP              0x0037 /* DWARF6 */
 #define DW_LANG_CPP_for_OpenCL          0x0038 /* DWARF6 */
 #define DW_LANG_SYCL                    0x0039 /* DWARF6 */
+#define DW_LANG_C_plus_plus_23          0x003a /* DWARF6 */
+#define DW_LANG_Odin                    0x003b /* DWARF6 */
+#define DW_LANG_P4                      0x003c /* DWARF6 */
+#define DW_LANG_Metal                   0x003d /* DWARF6 */
+#define DW_LANG_C23                     0x003e /* DWARF6 */
+#define DW_LANG_Fortran23               0x003f /* DWARF6 */
 #define DW_LANG_Ruby                    0x0040 /* DWARF6 */
 #define DW_LANG_Move                    0x0041 /* DWARF6 */
 #define DW_LANG_Hylo                    0x0042 /* DWARF6 */
 #define DW_LANG_V                       0x0043 /* DWARF6 */
 #define DW_LANG_Algol68                 0x0044 /* DWARF6 */
+#define DW_LANG_NIM                     0x0045 /* DWARF6 */
+#define DW_LANG_Erlang                  0x0046 /* DWARF6 */
+#define DW_LANG_Elixir                  0x0047 /* DWARF6 */
+#define DW_LANG_Gleam                   0x0048 /* DWARF6 */
 
 #define DW_LANG_lo_user                 0x8000
 #define DW_LANG_Mips_Assembler          0x8001 /* MIPS   */
@@ -1262,7 +1274,7 @@ most-likely-useful name. */
 #define DW_LNAME_C_sharp           0x001e  /* DWARF6 */
 #define DW_LNAME_Mojo              0x001f  /* DWARF6 */
 #define DW_LNAME_GLSL              0x0020  /* DWARF6 */
-#define DW_LNAME_GLSLES            0x0021  /* DWARF6 */
+#define DW_LNAME_GLSL_ES           0x0021  /* DWARF6 */
 #define DW_LNAME_HLSL              0x0022  /* DWARF6 */
 #define DW_LNAME_OpenCL_CPP        0x0023  /* DWARF6 */
 #define DW_LNAME_CPP_for_OpenCL    0x0024  /* DWARF6 */
@@ -1277,6 +1289,9 @@ most-likely-useful name. */
 #define DW_LNAME_V                 0x002d  /* DWARF6 */
 #define DW_LNAME_Algol68           0x002e  /* DWARF6 */
 #define DW_LNAME_Nim               0x002f  /* DWARF6 */
+#define DW_LNAME_Erlang            0x0030  /* DWARF6 */
+#define DW_LNAME_Elixir            0x0031  /* DWARF6 */
+#define DW_LNAME_Gleam             0x0032  /* DWARF6 */
 
 /* Identifier case name. */
 #define DW_ID_case_sensitive            0x00

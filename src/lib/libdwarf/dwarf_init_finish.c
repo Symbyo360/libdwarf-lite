@@ -964,7 +964,7 @@ _dwarf_setup(Dwarf_Debug dbg, Dwarf_Error * error)
                                 obj_section_index,is_rela);
                         }
                     } else {
-                        /* Something is wrong with the ELF file. */
+                        /* Something is wrong with the object file. */
                         free(sections);
                         DWARF_DBG_ERROR(dbg, DW_DLE_ELF_SECT_ERR,
                             DW_DLV_ERROR);
@@ -1111,6 +1111,8 @@ dwarf_object_init_b(Dwarf_Obj_Access_Interface_a* obj,
             setup_result = fission_result;
         }
         if (setup_result == DW_DLV_OK) {
+            /*  Defaults OFF as of 25 Nov 2025. V2.2.1 */
+            dbg->de_harmless_errors_on = 0;
             _dwarf_harmless_init(&dbg->de_harmless_errors,
                 DW_HARMLESS_ERROR_CIRCULAR_LIST_DEFAULT_SIZE);
             *ret_dbg = dbg;

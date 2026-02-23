@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(libdwarf VERSION 2.1.0 
+project(libdwarf VERSION 2.3.0 
     DESCRIPTION "Library to access DWARF debugging information" 
     HOMEPAGE_URL "https://github.com/davea42/libdwarf-code.git"
     LANGUAGES C CXX)
@@ -44,9 +44,9 @@ macro(msvc_posix target)
     endif()
 endmacro()
 
-set(LIBDWARF_CRT "MD" CACHE STRING "Either MT or MD, specifies whether to use the static or dynamic MSVCRT.")
-
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+  set(LIBDWARF_CRT "MD" CACHE STRING "Either MT or MD, specifies whether to use the static or dynamic MSVCRT.")
+
   # Use CMAKE_MSVC_RUNTIME in versions 3.15 and up
   if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.15")
     cmake_policy(SET CMP0091 NEW)
@@ -55,7 +55,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
       set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
     elseif(LIBDWARF_CRT STREQUAL "MD")
       message(STATUS "Using MD runtime by CMAKE_MSVC_RUNTIME_LIBRARY")
-      set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+      set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
     else()
       message(FATAL_ERROR "LIBDWARF_CRT must be MT or MD")
     endif()
@@ -130,15 +130,18 @@ if (${isBigEndian})
   set ( WORDS_BIGENDIAN 1 )
 endif()
 
-check_include_file( "sys/types.h"     HAVE_SYS_TYPES_H)
-if (BUILD_MMAP)
-check_include_file( "sys/mman.h"      HAVE_SYS_MMAN_H)
-endif()
-check_include_file( "sys/stat.h"      HAVE_SYS_STAT_H )
-check_include_file( "stdint.h"        HAVE_STDINT_H   )
 check_include_file( "unistd.h"        HAVE_UNISTD_H   )
-check_include_file( "stdafx.h"        HAVE_STDAFX_H   )
+check_include_file( "sys/types.h"     HAVE_SYS_TYPES_H )
+check_include_file( "malloc.h"        HAVE_MALLOC_H )
+check_include_file( "stdint.h"        HAVE_STDINT_H )
+check_include_file( "inttypes.h"      HAVE_INTYPES_H )
+check_include_file( "stddef.h"        HAVE_STDDEF_H )
 check_include_file( "fcntl.h"         HAVE_FCNTL_H   )
+check_include_file( "sys/stat.h"      HAVE_SYS_STAT_H )
+check_include_file( "stdafx.h"        HAVE_STDAFX_H   )
+if (BUILD_MMAP)
+check_include_file( "sys/mman.h"      HAVE_SYS_MMAN_H )
+endif()
 
 ### cmake provides no way to guarantee uint32_t present.
 ### configure does guarantee that.

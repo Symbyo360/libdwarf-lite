@@ -202,6 +202,15 @@ struct Dwarf_CU_Context_s {
         compiler is set to CC_PROD_METROW */
     Dwarf_Small cc_producer;
 
+    /*  Data relating to DW_AT_language_name
+        and DW_AT_language_version from CU DIE */
+    Dwarf_Half     cc_language_name;
+    Dwarf_Bool     cc_have_language_version;
+    int            cc_language_default_lowbound;
+    Dwarf_Unsigned cc_language_version;
+    const char    *cc_language_version_scheme;
+    const char    *cc_language_version_name;
+
     /*  cc_debug_offset is the global offset in the section
         of the area length field of the CU.
         The CU header of the CU is at offset
@@ -276,7 +285,6 @@ struct Dwarf_CU_Context_s {
     /*  cc_cu_die_offset_present is non-zero if
         cc_cu_die_global_sec_offset is meaningful.  */
     Dwarf_Bool     cc_cu_die_offset_present;
-    Dwarf_Bool     cc_at_ranges_offset_present;
     /*  About: DW_AT_addr_base in CU DIE,
         offset to .debug_addr table */
     Dwarf_Bool     cc_addr_base_offset_present;
@@ -352,8 +360,6 @@ struct Dwarf_CU_Context_s {
     Dwarf_Bool     cc_macro_base_present;
     Dwarf_Bool     cc_macro_header_length_present;
 
-    /*  For quick access to .debug_ranges from a CU DIE. */
-    Dwarf_Unsigned cc_at_ranges_offset;
     /*  DW_SECT_RNGLISTS  */
     /*  DW_AT_GNU_ranges_base was a GNU extension that appeared
         but was unused. See dwarf_die_deliv.c for details. */
@@ -860,6 +866,10 @@ struct Dwarf_Debug_s {
     unsigned int   de_universalbinary_count;
     unsigned int   de_universalbinary_index;
 
+    /*  If zero these are not validated and must be validated.
+        See _dwarf_validate_register_numbers() */
+    unsigned char  de_frame_numbers_validated;
+
     unsigned char de_big_endian_object; /* Non-zero if
         object being read is big-endian. */
 
@@ -882,6 +892,12 @@ struct Dwarf_Debug_s {
     unsigned de_debug_sections_total_entries;
 
     struct Dwarf_Harmless_s de_harmless_errors;
+
+    /*  Non-zero (the default) if harmless errors are tracked
+        normally. If zero, then harmless errors are not tracked,
+        which can improve performance by avoiding string copies
+        in various error paths. */
+    unsigned char de_harmless_errors_on;
 
     struct Dwarf_Printf_Callback_Info_s  de_printf_callback;
     void *   de_printf_callback_null_device_handle;
@@ -1222,6 +1238,13 @@ _dwarf_has_SECT_fission(Dwarf_CU_Context ctx,
     unsigned int      SECT_number, /* example: DW_SECT_RNGLISTS */
     Dwarf_Bool       *hasfissionoffset,
     Dwarf_Unsigned   *loclistsbase);
+int
+_dwarf_read_str_index_val_itself(Dwarf_Debug dbg,
+    unsigned theform, Dwarf_Small *info_ptr,
+    Dwarf_Small *section_end,
+    Dwarf_Unsigned *return_index,
+    Dwarf_Unsigned *return_index_length,
+    Dwarf_Error *error) ;
 
 int _dwarf_skip_leb128(char * leb,
     Dwarf_Unsigned * leblen,

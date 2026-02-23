@@ -1287,6 +1287,21 @@ _dwarf_loclists_fill_in_lle_head(Dwarf_Debug dbg,
         if (res == DW_DLV_OK) {
             /* FALL THROUGH */
         } else if (res == DW_DLV_NO_ENTRY) {
+            /*  The following is only needed by a project
+                reading an object file  with bad relocations
+                and opening the DWARF via
+                dwarf_object_init_b(), meaning the user
+                object reader is taking all responsibility
+                for object checking while not doing
+                enough checking.  So this is a special
+                accomodation for the specific user code and
+                we cannot guarantee this suffices. */
+            if (!array) {
+                _dwarf_error_string(dbg,error,DW_DLE_LOCLISTS_ERROR,
+                    "DW_DLE_LOCLISTS_ERROR: "
+                    "no .debug_loclists context available");
+                return DW_DLV_ERROR;
+            }
             loclists_contextnum = 0;
             /* FALL THROUGH */
         } else {
