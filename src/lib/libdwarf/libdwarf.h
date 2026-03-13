@@ -29,8 +29,8 @@
   Floor, Boston MA 02110-1301, USA.
 
 */
-/*! @file*/
-/*! @page libdwarf.h
+/*! @file libdwarf.h */
+/*! @page libdwarfheader
     @tableofcontents
     libdwarf.h contains all the type declarations
     and function function declarations
@@ -99,10 +99,10 @@ extern "C" {
 */
 
 /* Semantic Version identity for this libdwarf.h */
-#define DW_LIBDWARF_VERSION "2.3.0"
+#define DW_LIBDWARF_VERSION "2.3.1"
 #define DW_LIBDWARF_VERSION_MAJOR 2
 #define DW_LIBDWARF_VERSION_MINOR 3
-#define DW_LIBDWARF_VERSION_MICRO 0
+#define DW_LIBDWARF_VERSION_MICRO 1
 
 #define DW_PATHSOURCE_unspecified 0
 #define DW_PATHSOURCE_basic     1
@@ -8588,7 +8588,7 @@ DW_API int dwarf_get_xu_index_section_type(
 
 /*! @brief Get a Hash Entry
 
-    @see examplez/x
+    @see examplez
 
     @param dw_xuhdr
     Pass in an open header pointer.

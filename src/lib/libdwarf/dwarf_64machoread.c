@@ -64,7 +64,6 @@ _dwarf_load_macho_header64(dwarf_macho_object_access_internals_t *mfp,
     struct mach_header_64 mh64;
     int res = 0;
     Dwarf_Unsigned inner = mfp->mo_inner_offset;
-    Dwarf_Unsigned commandsizetotal = 0;
 
     if (sizeof(mh64) > mfp->mo_filesize) {
         *errcode = DW_DLE_FILE_TOO_SMALL;
@@ -87,15 +86,8 @@ _dwarf_load_macho_header64(dwarf_macho_object_access_internals_t *mfp,
     ASNAR(mfp->mo_copy_word,mfp->mo_header.flags,mh64.flags);
     ASNAR(mfp->mo_copy_word,mfp->mo_header.reserved,mh64.reserved);
     mfp->mo_command_count = (unsigned int)mfp->mo_header.ncmds;
-    res = _dwarf_uint64_mult(mfp->mo_header.sizeofcmds,
-        mfp->mo_command_count,&commandsizetotal);
-    if (res == DW_DLV_ERROR) {
-        /* overflow in multiply! */
-        *errcode = DW_DLE_MACHO_CORRUPT_HEADER;
-        return DW_DLV_ERROR;
-    }
-    if (commandsizetotal >=  MAX_COMMANDS_SIZE ||
-        commandsizetotal >= mfp->mo_filesize ) {
+    if (mfp->mo_header.sizeofcmds >= MAX_COMMANDS_SIZE ||
+        mfp->mo_header.sizeofcmds >= mfp->mo_filesize ) {
         *errcode = DW_DLE_MACHO_CORRUPT_HEADER;
         return DW_DLV_ERROR;
     }
@@ -134,10 +126,6 @@ _dwarf_load_segment_command_content64(
     ASNAR(mfp->mo_copy_word,msp->cmdsize,sc.cmdsize);
     _dwarf_safe_strcpy(msp->segname,sizeof(msp->segname),
         sc.segname,sizeof(sc.segname));
-    if (!_dwarf_is_known_segname(msp->segname)) {
-        *errcode = DW_DLE_MACHO_CORRUPT_COMMAND;
-        return DW_DLV_ERROR;
-    }
     ASNAR(mfp->mo_copy_word,msp->vmaddr,sc.vmaddr);
     ASNAR(mfp->mo_copy_word,msp->vmsize,sc.vmsize);
     ASNAR(mfp->mo_copy_word,msp->fileoff,sc.fileoff);
@@ -298,10 +286,6 @@ _dwarf_macho_load_dwarf_section_details64(
         _dwarf_safe_strcpy(secs->segname,
             sizeof(secs->segname),
             mosec.segname,sizeof(mosec.segname));
-        if (!_dwarf_is_known_segname(secs->segname)) {
-            *errcode = DW_DLE_MACHO_CORRUPT_SECTIONDETAILS;
-            return DW_DLV_ERROR;
-        }
         ASNAR(mfp->mo_copy_word,secs->addr,mosec.addr);
         ASNAR(mfp->mo_copy_word,secs->size,mosec.size);
         ASNAR(mfp->mo_copy_word,secs->offset,mosec.offset);

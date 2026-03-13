@@ -89,6 +89,8 @@ print_arch_item(unsigned int i,
 }
 #endif
 
+#if 0 /* This check is inappropriate.  */
+/*  The actual list gets added-to by Apple */
 /*  One wonders if a duplicated segname name is an error.
     I suppose so, but we do not yet check for that. */
 static const char *
@@ -120,6 +122,7 @@ _dwarf_is_known_segname(char *sname)
     }
     return FALSE;
 }
+#endif
 /*  We do not expect non-ascii characters in section
     names, they are defined by the compiler-writers
     and ABI rules. We allow an empty name... */
@@ -143,7 +146,8 @@ static struct macho_sect_names_s {
     { "", "" },  /* ELF index-0 entry */
     { "__debug_abbrev",         ".debug_abbrev"   },
     { "__debug_aranges",        ".debug_aranges"  },
-    { "__debug_frame",          ".debug_frame"    },
+    { "__debug_frame",          ".debug_frame" /* a guess */},
+    { "__eh_frame",             ".eh_frame"       },
     { "__debug_info",           ".debug_info"     },
     { "__debug_addr",           ".debug_addr"     },
     { "__debug_line",           ".debug_line"     },
@@ -353,7 +357,6 @@ load_macho_header32(dwarf_macho_object_access_internals_t *mfp,
     struct mach_header mh32;
     int res = 0;
     Dwarf_Unsigned inner = mfp->mo_inner_offset;
-    Dwarf_Unsigned commandsizetotal = 0;
 
     if (sizeof(mh32) > mfp->mo_filesize) {
         *errcode = DW_DLE_FILE_TOO_SMALL;
@@ -376,15 +379,8 @@ load_macho_header32(dwarf_macho_object_access_internals_t *mfp,
     ASNAR(mfp->mo_copy_word,mfp->mo_header.flags,mh32.flags);
     mfp->mo_header.reserved = 0;
     mfp->mo_command_count = (unsigned int)mfp->mo_header.ncmds;
-    res = _dwarf_uint64_mult(mfp->mo_header.sizeofcmds,
-        mfp->mo_command_count,&commandsizetotal);
-    if (res == DW_DLV_ERROR) {
-        /* overflow  in multiply */
-        *errcode = DW_DLE_MACHO_CORRUPT_HEADER;
-        return DW_DLV_ERROR;
-    }
-    if (commandsizetotal >= mfp->mo_filesize ||
-        commandsizetotal >=  MAX_COMMANDS_SIZE ) {
+    if (mfp->mo_header.sizeofcmds >= mfp->mo_filesize ||
+        mfp->mo_header.sizeofcmds >= MAX_COMMANDS_SIZE ) {
         *errcode = DW_DLE_MACHO_CORRUPT_HEADER;
         return DW_DLV_ERROR;
     }
@@ -441,10 +437,6 @@ load_segment_command_content32(
     ASNAR(mfp->mo_copy_word,msp->cmdsize,sc.cmdsize);
     _dwarf_safe_strcpy(msp->segname,sizeof(msp->segname),
         sc.segname,sizeof(sc.segname));
-    if (!_dwarf_is_known_segname(msp->segname)) {
-        *errcode = DW_DLE_MACHO_CORRUPT_COMMAND;
-        return DW_DLV_ERROR;
-    }
     ASNAR(mfp->mo_copy_word,msp->vmaddr,sc.vmaddr);
     ASNAR(mfp->mo_copy_word,msp->vmsize,sc.vmsize);
     ASNAR(mfp->mo_copy_word,msp->fileoff,sc.fileoff);
@@ -671,10 +663,6 @@ _dwarf_macho_load_dwarf_section_details32(
         }
         _dwarf_safe_strcpy(secs->segname, sizeof(secs->segname),
             mosec.segname,sizeof(mosec.segname));
-        if (!_dwarf_is_known_segname(secs->segname)) {
-            *errcode = DW_DLE_MACHO_CORRUPT_SECTIONDETAILS;
-            return DW_DLV_ERROR;
-        }
         ASNAR(mfp->mo_copy_word,secs->addr,mosec.addr);
         ASNAR(mfp->mo_copy_word,secs->size,mosec.size);
         ASNAR(mfp->mo_copy_word,secs->offset,mosec.offset);
@@ -742,6 +730,7 @@ _dwarf_macho_load_dwarf_sections(
     struct generic_macho_segment_command *segp =
         mfp->mo_segment_commands;
     if (ftype != MH_DSYM &&
+        ftype != MH_EXECUTE &&
         ftype != MH_OBJECT) {
         /* We do not think it can have DWARF */
         return DW_DLV_OK;

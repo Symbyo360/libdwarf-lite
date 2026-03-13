@@ -15,7 +15,8 @@ cd libdwarf-code
 # git checkout "78232149dfa4740387aedbc0a5bb4e3ba111258e" # v0.12.0
 # git checkout "be6d4ca64e41698514dc2355f9ae75070aed119f" # v2.0.0
 # git checkout "2fb65851ff757eb8f6f6777954bdfa4bced2911e" # v2.1.0
-git checkout "63c286fa066879eb535bd9d72c48e924bb06790f" # v2.1.0
+# git checkout "63c286fa066879eb535bd9d72c48e924bb06790f" # v2.3.0
+git checkout "b5ef10c9df0f494596fd9d31e19048a3ed5f28ba" # v2.3.1
 cd ..
 echo "Copying files"
 mkdir -p src/lib
